@@ -94,6 +94,7 @@ def check_afk(bot, update, user_id, fst_name):
 __help__ = """
  - /afk <reason>: mark yourself as AFK.
  - brb <reason>: same as the afk command - but not a command.
+
 When marked as AFK, any mentions will be replied to with a message to say that you're not available!
 """
 
@@ -108,15 +109,3 @@ dispatcher.add_handler(AFK_HANDLER, AFK_GROUP)
 dispatcher.add_handler(AFK_REGEX_HANDLER, AFK_GROUP)
 dispatcher.add_handler(NO_AFK_HANDLER, AFK_GROUP)
 dispatcher.add_handler(AFK_REPLY_HANDLER, AFK_REPLY_GROUP)
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
