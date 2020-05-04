@@ -436,3 +436,221 @@ def send_settings(chat_id, user_id, user=False):
                                         parse_mode=ParseMode.MARKDOWN)
 
 
+
+@run_async
+def settings_button(bot: Bot, update: Update):
+    query = update.callback_query
+    user = update.effective_user
+    chatP = update.effective_chat  # type: Optional[Chat]
+    mod_match = re.match(r"stngs_module\((.+?),(.+?)\)", query.data)
+    prev_match = re.match(r"stngs_prev\((.+?),(.+?)\)", query.data)
+    next_match = re.match(r"stngs_next\((.+?),(.+?)\)", query.data)
+    back_match = re.match(r"stngs_back\((.+?)\)", query.data)
+    try:
+        if mod_match:
+            chat_id = mod_match.group(1)
+            module = mod_match.group(2)
+            chat = bot.get_chat(chat_id)
+            text = "*{}* has the following settings for the *{}* module:\n\n".format(escape_markdown(chat.title),
+                                                                                     CHAT_SETTINGS[
+                                                                                         module].__mod_name__) + \
+                   CHAT_SETTINGS[module].__chat_settings__(bot, update, chat, chatP, user)
+            query.message.reply_text(text=text,
+                                     parse_mode=ParseMode.MARKDOWN,
+                                     reply_markup=InlineKeyboardMarkup(
+                                         [[InlineKeyboardButton(text="Back",
+                                                                callback_data="stngs_back({})".format(chat_id))]]))
+
+        elif prev_match:
+            chat_id = prev_match.group(1)
+            curr_page = int(prev_match.group(2))
+            chat = bot.get_chat(chat_id)
+            query.message.reply_text(tld(user.id, "send-group-settings").format(chat.title),
+                                     reply_markup=InlineKeyboardMarkup(
+                                         paginate_modules(curr_page - 1, CHAT_SETTINGS, "stngs",
+                                                          chat=chat_id)))
+
+        elif next_match:
+            chat_id = next_match.group(1)
+            next_page = int(next_match.group(2))
+            chat = bot.get_chat(chat_id)
+            query.message.reply_text(tld(user.id, "send-group-settings").format(chat.title),
+                                     reply_markup=InlineKeyboardMarkup(
+                                         paginate_modules(next_page + 1, CHAT_SETTINGS, "stngs",
+                                                          chat=chat_id)))
+
+        elif back_match:
+            chat_id = back_match.group(1)
+            chat = bot.get_chat(chat_id)
+            query.message.reply_text(text=tld(user.id, "send-group-settings").format(escape_markdown(chat.title)),
+                                     parse_mode=ParseMode.MARKDOWN,
+                                     reply_markup=InlineKeyboardMarkup(paginate_modules(user.id, 0, CHAT_SETTINGS, "stngs",
+                                                                                        chat=chat_id)))
+
+        # ensure no spinny white circle
+        bot.answer_callback_query(query.id)
+        query.message.delete()
+    except BadRequest as excp:
+        if excp.message == "Message is not modified":
+            pass
+        elif excp.message == "Query_id_invalid":
+            pass
+        elif excp.message == "Message can't be deleted":
+            pass
+        else:
+            LOGGER.exception("Exception in settings buttons. %s", str(query.data))
+
+
+@run_async
+def get_settings(bot: Bot, update: Update):
+    chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user  # type: Optional[User]
+    msg = update.effective_message  # type: Optional[Message]
+    args = msg.text.split(None, 1)
+
+    # ONLY send settings in PM
+    if chat.type != chat.PRIVATE:
+        if is_user_admin(chat, user.id):
+            text = "Click here to get this chat's settings, as well as yours."
+            msg.reply_text(text,
+                           reply_markup=InlineKeyboardMarkup(
+                               [[InlineKeyboardButton(text="Settings",
+                                                      url="t.me/{}?start=stngs_{}".format(
+                                                          bot.username, chat.id))]]))
+        else:
+            text = "Click here to check your settings."
+
+    else:
+        send_settings(chat.id, user.id, True)
+
+
+
+def migrate_chats(bot: Bot, update: Update):
+    msg = update.effective_message  # type: Optional[Message]
+    if msg.migrate_to_chat_id:
+        old_chat = update.effective_chat.id
+        new_chat = msg.migrate_to_chat_id
+    elif msg.migrate_from_chat_id:
+        old_chat = msg.migrate_from_chat_id
+        new_chat = update.effective_chat.id
+    else:
+        return
+
+    LOGGER.info("Migrating from %s, to %s", str(old_chat), str(new_chat))
+    for mod in MIGRATEABLE:
+        mod.__migrate__(old_chat, new_chat)
+
+    LOGGER.info("Successfully migrated!")
+    raise DispatcherHandlerStop
+
+
+def main():
+    test_handler = CommandHandler("test", test)
+    start_handler = CommandHandler("start", start, pass_args=True)
+
+    help_handler = CommandHandler("help", get_help)
+    help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_")
+
+    start_callback_handler = CallbackQueryHandler(send_start, pattern=r"bot_start")
+    dispatcher.add_handler(start_callback_handler)
+
+    cntrl_panel = CommandHandler("controlpanel", control_panel)
+    cntrl_panel_callback_handler = CallbackQueryHandler(control_panel, pattern=r"cntrl_panel")
+    dispatcher.add_handler(cntrl_panel_callback_handler)
+    dispatcher.add_handler(cntrl_panel)
+
+    settings_handler = CommandHandler("settings", get_settings)
+    settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_")
+
+    migrate_handler = MessageHandler(Filters.status_update.migrate, migrate_chats)
+
+    # dispatcher.add_handler(test_handler)
+    dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(help_handler)
+    dispatcher.add_handler(settings_handler)
+    dispatcher.add_handler(help_callback_handler)
+    dispatcher.add_handler(settings_callback_handler)
+    dispatcher.add_handler(migrate_handler)
+
+    # dispatcher.add_error_handler(error_callback)
+
+    # add antiflood processor
+    Dispatcher.process_update = process_update
+
+    if WEBHOOK:
+        LOGGER.info("Using webhooks.")
+        updater.start_webhook(listen="0.0.0.0",
+                              port=PORT,
+                              url_path=TOKEN)
+
+        if CERT_PATH:
+            updater.bot.set_webhook(url=URL + TOKEN,
+                                    certificate=open(CERT_PATH, 'rb'))
+        else:
+            updater.bot.set_webhook(url=URL + TOKEN)
+
+    else:
+        LOGGER.info("Using long polling.")
+        updater.start_polling(timeout=15, read_latency=4)
+
+    updater.idle()
+
+CHATS_CNT = {}
+CHATS_TIME = {}
+
+
+def process_update(self, update):
+    # An error happened while polling
+    if isinstance(update, TelegramError):
+        try:
+            self.dispatch_error(None, update)
+        except Exception:
+            self.logger.exception('An uncaught error was raised while handling the error')
+        return
+
+    now = datetime.datetime.utcnow()
+    cnt = CHATS_CNT.get(update.effective_chat.id, 0)
+
+    t = CHATS_TIME.get(update.effective_chat.id, datetime.datetime(1970, 1, 1))
+    if t and now > t + datetime.timedelta(0, 1):
+        CHATS_TIME[update.effective_chat.id] = now
+        cnt = 0
+    else:
+        cnt += 1
+
+    if cnt > 10:
+        return
+
+    CHATS_CNT[update.effective_chat.id] = cnt
+    for group in self.groups:
+        try:
+            for handler in (x for x in self.handlers[group] if x.check_update(update)):
+                handler.handle_update(update, self)
+                break
+
+        # Stop processing with any other handler.
+        except DispatcherHandlerStop:
+            self.logger.debug('Stopping further handlers due to DispatcherHandlerStop')
+            break
+
+        # Dispatch any error.
+        except TelegramError as te:
+            self.logger.warning('A TelegramError was raised while processing the Update')
+
+            try:
+                self.dispatch_error(update, te)
+            except DispatcherHandlerStop:
+                self.logger.debug('Error handler stopped further handlers')
+                break
+            except Exception:
+                self.logger.exception('An uncaught error was raised while handling the error')
+
+        # Errors should not stop the thread.
+        except Exception:
+            self.logger.exception('An uncaught error was raised while processing the update')
+
+
+if __name__ == '__main__':
+    LOGGER.info("Successfully loaded modules: " + str(ALL_MODULES))
+    LOGGER.info("Successfully loaded")
+    main()
