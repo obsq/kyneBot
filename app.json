@@ -8,7 +8,7 @@
     "manager",
     "3"
   ],
-  "repository": "hhttps://github.com/obsq/kyneBot",
+  "repository": "https://github.com/obsq/kyneBot",
   "env": {
     "ENV": {
       "description": "Setting this to ANYTHING will enable env variables",
