@@ -8,15 +8,15 @@ from telegram.ext import CommandHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
-import haruka.modules.sql.connection_sql as sql
-from haruka import dispatcher, LOGGER, SUDO_USERS
-from haruka.modules.helper_funcs.chat_status import bot_admin, user_admin, is_user_admin, can_restrict
-from haruka.modules.helper_funcs.extraction import extract_user, extract_user_and_text
-from haruka.modules.helper_funcs.string_handling import extract_time
+import obsq.modules.sql.connection_sql as sql
+from obsq import dispatcher, LOGGER, SUDO_USERS
+from obsq.modules.helper_funcs.chat_status import bot_admin, user_admin, is_user_admin, can_restrict
+from obsq.modules.helper_funcs.extraction import extract_user, extract_user_and_text
+from obsq.modules.helper_funcs.string_handling import extract_time
 
-from haruka.modules.translations.strings import tld
+from obsq.modules.translations.strings import tld
 
-from haruka.modules.keyboard import keyboard
+from obsq.modules.keyboard import keyboard
 
 
 @user_admin
