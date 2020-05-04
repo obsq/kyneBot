@@ -178,6 +178,5 @@ It'll also allow you to autodelete them, stopping people from bluetexting.
     dispatcher.add_handler(TOGGLE_HANDLER)
 
 else:
-else:
     DisableAbleCommandHandler = CommandHandler
     DisableAbleRegexHandler = RegexHandler
