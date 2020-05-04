@@ -298,3 +298,106 @@ def set_custom_welcome(chat_id, custom_content, custom_welcome, welcome_type, bu
 
         SESSION.commit()
 
+def get_custom_welcome(chat_id):
+    welcome_settings = SESSION.query(Welcome).get(str(chat_id))
+    ret = DEFAULT_WELCOME
+    if welcome_settings and welcome_settings.custom_welcome:
+        ret = welcome_settings.custom_welcome
+
+    SESSION.close()
+    return ret
+
+
+def set_custom_gdbye(chat_id, custom_content_leave, custom_goodbye, goodbye_type, buttons=None):
+    if buttons is None:
+        buttons = []
+
+    with INSERTION_LOCK:
+        welcome_settings = SESSION.query(Welcome).get(str(chat_id))
+        if not welcome_settings:
+            welcome_settings = Welcome(str(chat_id), True)
+
+        if custom_goodbye:
+            welcome_settings.custom_content_leave = custom_content_leave
+            welcome_settings.custom_leave = custom_goodbye
+            welcome_settings.leave_type = goodbye_type.value
+
+        else:
+            welcome_settings.custom_leave = DEFAULT_GOODBYE
+            welcome_settings.leave_type = Types.TEXT.value
+
+        SESSION.add(welcome_settings)
+
+        with LEAVE_BTN_LOCK:
+            prev_buttons = SESSION.query(GoodbyeButtons).filter(GoodbyeButtons.chat_id == str(chat_id)).all()
+            for btn in prev_buttons:
+                SESSION.delete(btn)
+
+            for b_name, url, same_line in buttons:
+                button = GoodbyeButtons(chat_id, b_name, url, same_line)
+                SESSION.add(button)
+
+        SESSION.commit()
+
+
+def get_custom_gdbye(chat_id):
+    welcome_settings = SESSION.query(Welcome).get(str(chat_id))
+    ret = DEFAULT_GOODBYE
+    if welcome_settings and welcome_settings.custom_leave:
+        ret = welcome_settings.custom_leave
+
+    SESSION.close()
+    return ret
+
+
+def get_welc_buttons(chat_id):
+    try:
+        return SESSION.query(WelcomeButtons).filter(WelcomeButtons.chat_id == str(chat_id)).order_by(
+            WelcomeButtons.id).all()
+    finally:
+        SESSION.close()
+
+
+def get_gdbye_buttons(chat_id):
+    try:
+        return SESSION.query(GoodbyeButtons).filter(GoodbyeButtons.chat_id == str(chat_id)).order_by(
+            GoodbyeButtons.id).all()
+    finally:
+        SESSION.close()
+
+
+def migrate_chat(old_chat_id, new_chat_id):
+    with INSERTION_LOCK:
+        chat = SESSION.query(Welcome).get(str(old_chat_id))
+        if chat:
+            chat.chat_id = str(new_chat_id)
+
+        with WELC_BTN_LOCK:
+            chat_buttons = SESSION.query(WelcomeButtons).filter(WelcomeButtons.chat_id == str(old_chat_id)).all()
+            for btn in chat_buttons:
+                btn.chat_id = str(new_chat_id)
+
+        with LEAVE_BTN_LOCK:
+            chat_buttons = SESSION.query(GoodbyeButtons).filter(GoodbyeButtons.chat_id == str(old_chat_id)).all()
+            for btn in chat_buttons:
+                btn.chat_id = str(new_chat_id)
+
+        SESSION.commit()
+
+def __load_chat_userrestirect():
+    global CHAT_USERRESTIRECT
+    try:
+        chats = SESSION.query(UserRestirect.chat_id).distinct().all()
+        for (chat_id,) in chats:  # remove tuple by ( ,)
+            CHAT_USERRESTIRECT[chat_id] = []
+
+        all_filters = SESSION.query(UserRestirect).all()
+        for x in all_filters:
+            CHAT_USERRESTIRECT[x.chat_id] += [x.user_id]
+
+        CHAT_USERRESTIRECT = {x: set(y) for x, y in CHAT_USERRESTIRECT.items()}
+
+    finally:
+        SESSION.close()
+
+__load_chat_userrestirect()
