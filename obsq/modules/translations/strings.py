@@ -1,31 +1,16 @@
 from obsq.modules.sql.translation import prev_locale
 from obsq.modules.translations.English import EnglishStrings
-from obsq.modules.translations.Russian import RussianStrings
-from obsq.modules.translations.Ukraine import UkrainianStrings
-from obsq.modules.translations.Spanish import SpanishStrings
-from obsq.modules.translations.Turkish import TurkishStrings
-from obsq.modules.translations.Indonesian import IndonesianStrings
 
 def tld(chat_id, t, show_none=True):
     LANGUAGE = prev_locale(chat_id)
     print(chat_id, t)
     if LANGUAGE:
         LOCALE = LANGUAGE.locale_name
-        if LOCALE in ('ru') and t in RussianStrings:
-           return RussianStrings[t]
-        elif LOCALE in ('ua') and t in UkrainianStrings:
-            return UkrainianStrings[t]
-        elif LOCALE in ('es') and t in SpanishStrings:
-            return SpanishStrings[t]
-        elif LOCALE in ('tr') and t in TurkishStrings:
-            return TurkishStrings[t]
-        elif LOCALE in ('id') and t in IndonesianStrings:
-            return IndonesianStrings[t]
+        if t in EnglishStrings:
+            return EnglishStrings[t]
         else:
-            if t in EnglishStrings:
-                return EnglishStrings[t]
-            else:
-                return t
+            return t
+
     elif show_none:
         if t in EnglishStrings:
             return EnglishStrings[t]
@@ -43,18 +28,8 @@ def tld_help(chat_id, t):
         t = t + "_help"
 
         print("Test2", t)
+        return False
 
-        if LOCALE in ('ru') and t in RussianStrings:
-            return RussianStrings[t]
-        elif LOCALE in ('ua') and t in UkrainianStrings:
-            return UkrainianStrings[t]
-        elif LOCALE in ('es') and t in SpanishStrings:
-            return SpanishStrings[t]
-        elif LOCALE in ('tr') and t in TurkishStrings:
-            return TurkishStrings[t]
-        elif LOCALE in ('id') and t in IndonesianStrings:
-            return IndonesianStrings[t]
-        else:
-            return False
+
     else:
         return False
