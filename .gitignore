@@ -1,0 +1,16 @@
+obsq/config.py
+*.pyc
+.idea/
+logfile
+backups/
+.project
+.pydevproject
+.directory
+.vscode
+sticker.png
+kangsticker
+kangsticker.png
+okgoogle.png
+log.err
+log.log
+*.backup
