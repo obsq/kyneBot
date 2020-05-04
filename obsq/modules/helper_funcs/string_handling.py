@@ -262,4 +262,3 @@ def markdown_to_html(text):
     text = text.replace("`", "```")
     _html = markdown2.markdown(text)
     return bleach.clean(_html, tags=['strong', 'em', 'a', 'code', 'pre'], strip=True)[:-1]
-© 2020 GitHub, Inc.
