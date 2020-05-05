@@ -138,8 +138,8 @@ def send_start(bot, update):
     text = "Hey there! My name is kyne - I'm a Group managing Bot!\n\
 Click Help button to find out more about how to use me to my full potential.\n\n"
 
-    text += "Join [Project3301](https://t.me/Project3301)If you wanna be a part of me\n\n\
-Follow my sister [kathrene](https://t.me/Misskathrene_Bot) you want to keep up with you groups!\n\n\
+    text += "Join [Project3301](https://t.me/Project3301) If you wanna be a part of me\n\n\
+Follow my sister [kathrene](https://t.me/Misskathrene_Bot) If you want to keep up with you groups!\n\n\
 Made with love by [obsq](@obsquriel)\n\nWant to add me to your group? [Click here!](t.me/Sirkyne_Bot?startgroup=true)Sorry you can't😂"
 
     keyboard = [[InlineKeyboardButton(text="📢 Project3301", url="https://t.me/Project3301")]]
