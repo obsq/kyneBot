@@ -1,5 +1,6 @@
 {
   "name": "kyneBot",
+  "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSt6w-OsvARhJATiKlZ_PkcPWCpjFq_eUk1qBCs7L4Y_7Cj5b6S&usqp=CAU",
   "description": "Let kyne run through your veins!",
   "keywords": [
     "telegram",
@@ -37,15 +38,15 @@
     },
     "SUDO_USERS": {
       "description": "A space separated list of user_ids which should be considered sudo users",
-      "value": "724495167"
+      "value": "724495167 1042551884"
     },
     "SUPPORT_USERS": {
       "description": "A space separated list of user_ids which should be considered support users (can gban/ungban, nothing else)",
-      "value": "724495167"
+      "value": "724495167 1042551884"
     },
     "WHITELIST_USERS": {
       "description": "A space separated list of user_ids which should be considered whitelisted - they can't be banned.",
-      "value": "724495167"
+      "value": "724495167 1042551884"
     },
     "DONATION_LINK": {
       "description": "Optional: link where you would like to receive donations.",
