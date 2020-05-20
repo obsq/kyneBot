@@ -140,7 +140,7 @@ def send_start(bot, update):
 
     text += "`Join` [kyne3301](https://t.me/kyne3301) `If you wanna be a part of me`\n\n\
 `Follow my sister` [kathrene](https://t.me/Misskathrene_Bot) `If you want to keep up with you groups!`\n\n\
-`Made with love by` [obsq](https://t.me/obsquriel) \n\n`Want to add me to your group?` [Click here!](t.me/Sirkyne_Bot?startgroup=true)`Sorry you can't😂`"
+`Made with love by` [OႦʂϙ](https://t.me/obsquriel) \n\n`Want to add me to your group?` [Click here!](t.me/Sirkyne_Bot?startgroup=true) `Sorry you can't😂`"
 
     keyboard = [[InlineKeyboardButton(text="📢 kyne3301", url="https://t.me/kyne3301")]]
     keyboard += [[InlineKeyboardButton(text="🛠 Control panel", callback_data="cntrl_panel_M")]]
