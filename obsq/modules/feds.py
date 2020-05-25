@@ -25,7 +25,7 @@ from obsq.modules.disable import DisableAbleCommandHandler
 
 import obsq.modules.sql.feds_sql as sql
 
-# Hello bot owner, I spended for feds many hours of my life, Please don't remove this if you still respect MrYacha and peaktogoo and AyraHikari too
+# Hello bot owner, I spended for feds many hours of my life.
 # Federation by MrYacha 2018-2019
 # Federation rework by Mizukito Akito 2019
 # Federation update v2 by Ayra Hikari 2019
@@ -36,7 +36,7 @@ import obsq.modules.sql.feds_sql as sql
 #
 # Total spended for making this features is 68+ hours
 
-LOGGER.info("Original federation module by MrYacha, reworked by Mizukito Akito (@obsquriel) on Telegram.")
+LOGGER.info("I am @obsquriel on Telegram.")
 
 
 FBAN_ERRORS = {
